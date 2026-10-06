@@ -1,10 +1,11 @@
+from django.shortcuts import get_object_or_404, redirect
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import URL
 from .serializers import URLSerializer
 from .utils import encode_base62
-
 
 class ShortenURLView(APIView):
 
@@ -33,3 +34,13 @@ class ShortenURLView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
+
+class RedirectURLView(APIView):
+
+    def get(self, request, short_code):
+        url = get_object_or_404(
+            URL,
+            short_code=short_code
+        )
+
+        return redirect(url.original_url)

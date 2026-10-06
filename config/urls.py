@@ -17,8 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-        path("api/", include("shortener.urls")),
+from shortener.views import RedirectURLView
 
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/", include("shortener.urls")),
+    path("<str:short_code>/", RedirectURLView.as_view(), name="redirect-url"),
 ]
