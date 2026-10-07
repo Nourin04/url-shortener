@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from .models import URL
 from .serializers import URLSerializer
 from .utils import encode_base62
+from django.conf import settings
 
 class ShortenURLView(APIView):
 
@@ -28,7 +29,7 @@ class ShortenURLView(APIView):
         return Response(
             {
                 "short_code": url.short_code,
-                "short_url": f"http://localhost:8000/{url.short_code}",
+                "short_url": f"{settings.BASE_URL}/{url.short_code}",
                 "original_url": url.original_url,
                 "created_at": url.created_at,
             },

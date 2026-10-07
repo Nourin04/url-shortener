@@ -134,3 +134,5 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+BASE_URL = os.getenv("BASE_URL")
