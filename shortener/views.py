@@ -1,3 +1,4 @@
+from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework import status
 from rest_framework.response import Response
@@ -48,6 +49,12 @@ class RedirectURLView(APIView):
             short_code=short_code
         )
 
+        URL.objects.filter(
+            id=url.id
+        ).update(
+            click_count=F("click_count") + 1
+        )
+
         return redirect(url.original_url)
 
 class UserURLListView(APIView):
@@ -75,3 +82,22 @@ class UserURLDetailView(APIView):
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
+
+
+class URLStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        url = get_object_or_404(
+            URL,
+            id=pk,
+            owner=request.user
+        )
+
+        return Response({
+            "id": url.id,
+            "short_code": url.short_code,
+            "original_url": url.original_url,
+            "click_count": url.click_count,
+            "created_at": url.created_at,
+        })

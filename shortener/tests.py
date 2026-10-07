@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.test import SimpleTestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -28,6 +29,13 @@ class Base62Tests(SimpleTestCase):
 
 
 class ShortenURLAPITests(APITestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="shorten_user",
+            password="testpassword123"
+        )
+        self.client.force_authenticate(user=self.user)
 
     def test_create_short_url(self):
         response = self.client.post(
@@ -82,10 +90,53 @@ class ShortenURLAPITests(APITestCase):
 
         self.assertEqual(URL.objects.count(), 0)
 
+    def test_same_url_creates_different_short_codes(self):
+        data = {
+            "url": "https://example.com"
+        }
+
+        response1 = self.client.post(
+            "/api/shorten/",
+            data,
+            format="json"
+        )
+
+        response2 = self.client.post(
+            "/api/shorten/",
+            data,
+            format="json"
+        )
+
+        self.assertEqual(
+            response1.status_code,
+            status.HTTP_201_CREATED
+        )
+
+        self.assertEqual(
+            response2.status_code,
+            status.HTTP_201_CREATED
+        )
+
+        self.assertNotEqual(
+            response1.data["short_code"],
+            response2.data["short_code"]
+        )
+
+        self.assertEqual(
+            URL.objects.count(),
+            2
+        )
+
+
 class RedirectURLAPITests(APITestCase):
 
     def setUp(self):
+        self.user = User.objects.create_user(
+            username="redirect_user",
+            password="testpassword123"
+        )
         self.url = URL.objects.create(
+            owner=self.user,
             original_url="https://example.com",
             short_code="abc123"
         )
@@ -110,40 +161,66 @@ class RedirectURLAPITests(APITestCase):
             response.status_code,
             status.HTTP_404_NOT_FOUND
         )
-        
-def test_same_url_creates_different_short_codes(self):
-    data = {
-        "url": "https://example.com"
-    }
 
-    response1 = self.client.post(
-        "/api/shorten/",
-        data,
-        format="json"
-    )
 
-    response2 = self.client.post(
-        "/api/shorten/",
-        data,
-        format="json"
-    )
+class ClickAnalyticsTests(APITestCase):
 
-    self.assertEqual(
-        response1.status_code,
-        status.HTTP_201_CREATED
-    )
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="analytics_user",
+            password="testpassword123"
+        )
 
-    self.assertEqual(
-        response2.status_code,
-        status.HTTP_201_CREATED
-    )
+        self.url = URL.objects.create(
+            owner=self.user,
+            original_url="https://example.com",
+            short_code="analytics1"
+        )
 
-    self.assertNotEqual(
-        response1.data["short_code"],
-        response2.data["short_code"]
-    )
+    def test_redirect_increments_click_count(self):
+        self.assertEqual(self.url.click_count, 0)
 
-    self.assertEqual(
-        URL.objects.count(),
-        2
-    )
+        response = self.client.get("/analytics1/")
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_302_FOUND
+        )
+
+        self.url.refresh_from_db()
+
+        self.assertEqual(
+            self.url.click_count,
+            1
+        )
+
+    def test_multiple_clicks_increment_count(self):
+        self.client.get("/analytics1/")
+        self.client.get("/analytics1/")
+        self.client.get("/analytics1/")
+
+        self.url.refresh_from_db()
+
+        self.assertEqual(
+            self.url.click_count,
+            3
+        )
+
+    def test_user_can_view_own_stats(self):
+        self.client.force_authenticate(
+            user=self.user
+        )
+
+        response = self.client.get(
+            f"/api/urls/{self.url.id}/stats/"
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertEqual(
+            response.data["click_count"],
+            0
+        )

@@ -8,5 +8,16 @@ class URLSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = URL
-        fields = ["url", "short_code", "created_at"]
-        read_only_fields = ["short_code", "created_at"]
+        fields = [
+            "id",
+            "url",
+            "short_code",
+            "click_count",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "short_code",
+            "click_count",
+            "created_at",
+        ]
