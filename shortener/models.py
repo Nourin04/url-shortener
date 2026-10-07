@@ -1,8 +1,13 @@
+from django.contrib.auth.models import User
 from django.db import models
 
-# Create your models here.
 
 class URL(models.Model):
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="urls"
+    )
     original_url = models.URLField()
     short_code = models.CharField(max_length=10, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)

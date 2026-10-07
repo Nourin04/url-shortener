@@ -8,7 +8,11 @@ from .serializers import URLSerializer
 from .utils import encode_base62
 from django.conf import settings
 
+from rest_framework.permissions import IsAuthenticated
+
+
 class ShortenURLView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = URLSerializer(data=request.data)
@@ -19,7 +23,7 @@ class ShortenURLView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        url = serializer.save()
+        url = serializer.save(owner=request.user)
 
         short_code = encode_base62(url.id)
 
@@ -45,3 +49,29 @@ class RedirectURLView(APIView):
         )
 
         return redirect(url.original_url)
+
+class UserURLListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        urls = URL.objects.filter(owner=request.user)
+
+        serializer = URLSerializer(urls, many=True)
+
+        return Response(serializer.data)
+
+class UserURLDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        url = get_object_or_404(
+            URL,
+            id=pk,
+            owner=request.user
+        )
+
+        url.delete()
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
