@@ -33,9 +33,11 @@ class ShortenURLView(APIView):
 
         return Response(
             {
+                "id": url.id,
                 "short_code": url.short_code,
                 "short_url": f"{settings.BASE_URL}/{url.short_code}",
                 "original_url": url.original_url,
+                "click_count": url.click_count,
                 "created_at": url.created_at,
             },
             status=status.HTTP_201_CREATED
