@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import type { URLStats } from "../types";
 import { fetchStats } from "../api";
 
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
 interface Props {
   id: number;
   token: string;
@@ -13,8 +15,10 @@ export default function StatsModal({ id, token, shortCode, onClose }: Props) {
   const [stats, setStats] = useState<URLStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
-  // Fetch on mount
+  const shortUrl = `${BASE_URL}/${shortCode}`;
+
   useEffect(() => {
     fetchStats(token, id)
       .then(setStats)
@@ -28,6 +32,12 @@ export default function StatsModal({ id, token, shortCode, onClose }: Props) {
       month: "long",
       day: "numeric",
     });
+  }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(shortUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -50,6 +60,27 @@ export default function StatsModal({ id, token, shortCode, onClose }: Props) {
 
         {stats && (
           <div className="stats-grid">
+            {/* Short URL — full clickable link */}
+            <div className="stat-card wide stat-card-link-row">
+              <span className="stat-label">Short URL</span>
+              <div className="stat-link-row">
+                <a
+                  href={shortUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="stat-url stat-url-bold"
+                >
+                  {shortUrl}
+                </a>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={handleCopy}
+                >
+                  {copied ? "✓ Copied" : "Copy"}
+                </button>
+              </div>
+            </div>
+
             <div className="stat-card">
               <span className="stat-label">Short Code</span>
               <span className="stat-value code">/{shortCode}</span>
