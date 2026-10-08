@@ -23,6 +23,21 @@ export async function login(
   return res.json();
 }
 
+export async function register(
+  username: string,
+  password: string,
+  confirmPassword: string
+): Promise<void> {
+  const res = await fetch(`${BASE}/api/register/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password, confirm_password: confirmPassword }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error ?? "Registration failed");
+}
+
+
 export async function shortenURL(
   token: string,
   url: string

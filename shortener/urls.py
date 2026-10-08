@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     RedirectURLView,
+    RegisterView,
     ShortenURLView,
     URLStatsView,
     UserURLListView,
@@ -9,6 +10,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path("register/", RegisterView.as_view(), name="register"),
     path("shorten/", ShortenURLView.as_view(), name="shorten-url"),
     path("urls/", UserURLListView.as_view(), name="user-urls"),
     path(
