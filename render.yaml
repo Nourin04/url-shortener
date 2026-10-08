@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: url-shortener-backend
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true          # Render auto-generates a secure value
+      - key: ALLOWED_HOSTS
+        sync: false                  # You'll fill this in after deploy
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false                  # You'll fill this in after frontend deploys
+      - key: BASE_URL
+        sync: false                  # Your Render backend URL e.g. https://url-shortener-backend.onrender.com
+      - key: DB_NAME
+        fromDatabase:
+          name: url-shortener-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: url-shortener-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: url-shortener-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: url-shortener-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: url-shortener-db
+          property: port
+
+databases:
+  - name: url-shortener-db
+    databaseName: url_shortener
+    plan: free
