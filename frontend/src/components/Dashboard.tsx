@@ -3,7 +3,8 @@ import type { URLItem } from "../types";
 import { fetchURLs, shortenURL, deleteURL } from "../api";
 import StatsModal from "./StatsModal";
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
 
 interface Props {
   token: string;
