@@ -2,6 +2,14 @@
 
 A full-stack URL shortening application with user authentication, per-user link management, and click tracking.
 
+## Deployed URLs
+
+| Service | URL |
+|---------|-----|
+| Frontend | https://url-shortener-ten-iota-91.vercel.app |
+| Backend API | https://url-shortener-backend-5tpg.onrender.com |
+
+
 ## Table of Contents
 
 - [Overview](#overview)
